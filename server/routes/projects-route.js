@@ -2,6 +2,7 @@
 const router = require('express').Router();
 const Project = require('../models/project');
 const request = require('request-promise');
+const keys = require('../gitCredentials');
 
 const gitEndpoint = 'https://api.github.com';
 const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.56 Safari/536.5';
@@ -40,7 +41,7 @@ async function getOpenIssuesCount(projects) {
 		const arrayOfIssueCountPromises = projects.map((project) => {
 			// return promise
 			const promise = request({
-				url: `${gitEndpoint}/repos/${project.owner}/${project.name}`,
+				url: `${gitEndpoint}/repos/${project.owner}/${project.name}?client_id=${keys.gitHub.client_id}&client_secret=${keys.gitHub.client_secret}`,
 				method: 'GET',
 				headers: {
 					'User-Agent': userAgent
