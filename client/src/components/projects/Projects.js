@@ -22,7 +22,7 @@ class Projects extends Component {
 				<h2>List of OSS Projects</h2>
 				<ul>
 					{this.state.projects.map(project =>
-						<li key={project.id}><a href={project.gitHubLink}>{project.name}</a></li>
+						<li key={project._id}><a href={project.gitHubLink}>{project.name}</a> | Owner: {project.owner} | count: {project.open_issues_count}</li>
 					)}
 				</ul>
 			</div>

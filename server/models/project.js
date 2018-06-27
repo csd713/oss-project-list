@@ -10,6 +10,10 @@ const projectSchema = new Schema({
 		type: String,
 		required: true
 	},
+	owner: {
+		type: String,
+		required: true
+	},
 	gitHubLink: {
 		type: String,
 		required: true
@@ -42,6 +46,7 @@ module.exports.updateProject = function (id, project, options, callback) {
 	};
 	var update = {
 		name: project.name,
+		owner: project.owner,
 		gitHubLink: project.gitHubLink
 	}
 	Project.findOneAndUpdate(query, update, options, callback);
