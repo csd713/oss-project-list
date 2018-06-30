@@ -15,31 +15,54 @@ router.get('/', function (req, res) {
 		if (err) {
 			throw err;
 		}
-
-		// TODO - paginate to only 10 repos at a time
-
-
-		// TODO - make request to GitHub API here and then send response
+		// Make request to GitHub API here and then send response
 		// loopover all the repo names and fetch the required details
 		// do something else when it is done
-		// console.log(projects);
-		getOpenIssuesCount(projects)
+		getDataFromGItHub(projects)
 			.then((projects) => {
 				//console.log(projects);
 				res.json(projects);
 			});
+	});
+});
 
+// To get the projects from the database based on pages
+router.get('/page/:page_no', function (req, res) {
+	let page = {};
+	page.number = parseInt(req.params.page_no);
+
+	// keep the size of the page to 10 comments per page by default
+	page.size = 10;
+
+	if (page.number < 0 || page.number === 0) {
+		return res.json({
+			message: "Error",
+			error: "Invalid page number. Try positive page number!"
+		});
+	}
+
+	Project.getProjectsByPage(page, function (err, projects) {
+		if (err) {
+			return res.json({
+				message: "Error en aplicacion",
+				error: err
+			});
+		}
+		getDataFromGItHub(projects)
+			.then((projects) => {
+				res.json(projects);
+			});
 	});
 
 });
 
-// function to fetch total open issues from GitHub API
-
-async function getOpenIssuesCount(projects) {
+// function to fetch following data from GitHub API
+// total-open-issues, language
+async function getDataFromGItHub(projects) {
 	try {
 
 		const arrayOfIssueCountPromises = projects.map((project) => {
-			// return promise
+			// return the promise
 			const promise = request({
 				url: `${gitEndpoint}/repos/${project.owner}/${project.name}?client_id=${keys.gitHub.client_id}&client_secret=${keys.gitHub.client_secret}`,
 				method: 'GET',
@@ -47,8 +70,7 @@ async function getOpenIssuesCount(projects) {
 					'User-Agent': userAgent
 				}
 			});
-			// let count = JSON.parse(promise).open_issues_count;
-			// console.log(promise);
+
 			return promise;
 		});
 
@@ -65,11 +87,12 @@ async function getOpenIssuesCount(projects) {
 			project.owner = projects[i].owner;
 			project.gitHubLink = projects[i].gitHubLink;
 			project.open_issues_count = JSON.parse(result[i]).open_issues_count;
+			project.language = JSON.parse(result[i]).language;
+			project.updated_at = JSON.parse(result[i]).updated_at;
+			project.description = JSON.parse(result[i]).description;
 			temp_projects.push(project);
 		}
 
-		// console.log(temp_projects[0]);
-		// console.log('End of loop');
 		return temp_projects;
 	} catch (e) {
 		console.log(e.message);

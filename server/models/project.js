@@ -24,7 +24,7 @@ const projectSchema = new Schema({
 const Project = mongoose.model('Project', projectSchema);
 module.exports = Project;
 
-//Function to get projectSchema
+//Function to get projects
 module.exports.getProjects = function (callback, limit) {
 	Project.find(callback).limit(limit);
 }
@@ -58,4 +58,26 @@ module.exports.deleteProject = function (id, callback) {
 		_id: id
 	};
 	Project.remove(query, callback);
+}
+
+//Function to get projects using pagination
+module.exports.getProjectsByPage = function (page, callback) {
+	let query = {};
+	query.skip = page.size * (page.number - 1);
+	query.limit = page.size;
+
+	// count function is async - so find after getting the count
+	Project.count({}, function (err, count) {
+		if (err) {
+			return callback('Error in DB - No documents', null);
+		}
+
+		let totalPages = Math.ceil(count / page.size);
+
+		if (page.number > totalPages) {
+			return callback(`Invalid page number. Try a page number between 1 - ${totalPages}.`, null);
+		}
+
+		Project.find({}, {}, query, callback);
+	})
 }
