@@ -1,25 +1,39 @@
 import React, { Component } from 'react';
+import ProjectRow from './ProjectRow';
 import './Projects.css';
 
 class Projects extends Component {
 	constructor() {
 		super();
 		this.state = {
-			projects: []
+			projects: [],
 		};
+		this.getProjects = this.getProjects.bind(this);
+		this.handlePaginationClick = this.handlePaginationClick.bind(this);
 	}
 
 	componentDidMount() {
-		fetch('/api/project')
+		this.getProjects(1);
+	}
+
+	getProjects(pageNo) {
+		fetch(`/api/project/page/${pageNo}`)
 			.then(res => res.json())
 			.then(projects => this.setState({ projects }, () => console.log('Projects fetched...', projects)));
 	}
 
+	handlePaginationClick(pageNo, event) {
+		this.getProjects(pageNo);
+	}
 
 	render() {
 		return (
 			<div>
-				<h2>List of OSS Projects</h2>
+				<div className="shadow p-3 mb-5 bg-white rounded">
+					<a href="/">
+						<h2 className="text-center">List of OSS Projects</h2>
+					</a>
+				</div>
 				<div className="container-fluid table-responsive">
 					<table className="table table-hover">
 						<thead>
@@ -34,17 +48,27 @@ class Projects extends Component {
 						</thead>
 						<tbody>
 							{this.state.projects.map(project =>
-								<tr className="d-flex" key={project._id}>
-									<td className="col-2"><a href={project.gitHubLink}>{project.name}</a></td>
-									<td className="col-4">{project.description}</td>
-									<td className="col-2">{project.language}</td>
-									<td className="col-1">{project.open_issues_count}</td>
-									<td className="col-1">{project.owner}</td>
-									<td className="col-2">{project.updated_at}</td>
-								</tr>
+								<ProjectRow key={project._id} project={project} />
 							)}
 						</tbody>
 					</table>
+				</div>
+				<div>
+					<nav aria-label="...">
+						<ul className="pagination">
+							<li className="page-item disabled">
+								<a className="page-link" tabIndex="-1">Previous</a>
+							</li>
+							<li className="page-item"><a className="page-link" onClick={(e) => this.handlePaginationClick(1, e)}>1</a></li>
+							<li className="page-item active">
+								<a className="page-link" onClick={(e) => this.handlePaginationClick(2, e)}>2<span className="sr-only">(current)</span></a>
+							</li>
+							<li className="page-item"><a className="page-link" onClick={(e) => this.handlePaginationClick(3, e)}>3</a></li>
+							<li className="page-item">
+								<a className="page-link">Next</a>
+							</li>
+						</ul>
+					</nav>
 				</div>
 			</div>
 		);
